@@ -1,5 +1,5 @@
 variable "site_domain" {
-  description = "The public facing domain name for your servie (eg. pdlink.co)"
+  description = "The public facing domain name for your service (eg. pdlink.co)"
 }
 variable "certificate_arn" {
   description = "The ARN value for the certificate you've created using the AWS Certificate Manager"
@@ -9,15 +9,15 @@ variable "price_class" {
 }
 
 output "name_servers" {
-  value = "${aws_route53_zone.zone.name_servers}"
+  value = aws_route53_zone.zone.name_servers
 }
 
 output "origin_bucket" {
-  value = "${aws_s3_bucket.origin.bucket}"
+  value = aws_s3_bucket.origin.bucket
 }
 
 output "cloudfront_distribution" {
-  value = "${aws_cloudfront_distribution.distribution.id}"
+  value = aws_cloudfront_distribution.distribution.id
 }
 
 provider "aws" {
@@ -45,9 +45,41 @@ EOF
   }
 }
 
+resource "aws_cloudfront_response_headers_policy" "security_headers_policy" {
+  name = "pd-security-headers-policy"
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override = true
+    }
+    referrer_policy {
+      referrer_policy = "same-origin"
+      override = true
+    }
+    xss_protection {
+      mode_block = true
+      protection = true
+      override = true
+    }
+    strict_transport_security {
+      access_control_max_age_sec = "63072000"
+      include_subdomains = true
+      preload = true
+      override = true
+    }
+    content_security_policy {
+      content_security_policy = "frame-ancestors 'none'; default-src 'none'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'"
+      override = true
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "distribution" {
   origin {
-    domain_name = "${aws_s3_bucket.origin.website_endpoint}"
+    domain_name = aws_s3_bucket.origin.website_endpoint
     origin_id = "origin"
 
     custom_origin_config {
@@ -73,11 +105,13 @@ resource "aws_cloudfront_distribution" "distribution" {
         forward = "none"
       }
     }
+
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers_policy.id
   }
 
   viewer_certificate {
     minimum_protocol_version = "TLSv1"
-    acm_certificate_arn = "${var.certificate_arn}"
+    acm_certificate_arn = var.certificate_arn
     ssl_support_method = "sni-only"
   }
 
@@ -89,21 +123,21 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   enabled = true
   aliases = ["${var.site_domain}"]
-  price_class = "${var.price_class}"
+  price_class = var.price_class
   default_root_object = "index.html"
 }
 
 resource "aws_route53_zone" "zone" {
-  name = "${var.site_domain}"
+  name = var.site_domain
 }
 
 resource "aws_route53_record" "root" {
-  zone_id = "${aws_route53_zone.zone.zone_id}"
-  name = "${var.site_domain}"
+  zone_id = aws_route53_zone.zone.zone_id
+  name = var.site_domain
   type = "A"
 
   alias {
-    name = "${aws_cloudfront_distribution.distribution.domain_name}"
+    name = aws_cloudfront_distribution.distribution.domain_name
     zone_id = "Z2FDTNDATAQYW2"
     evaluate_target_health = false
   }
