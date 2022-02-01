@@ -48,15 +48,31 @@ https://blog.gruntwork.io/authenticating-to-aws-with-the-credentials-file-d16c0f
 ## Setting up the redirections
 
 The redirections are managed as a CSV file. To create a new redirect,
-add it to the file `build-short-urls/pd-short-urls.csv` and run:
+add it to the file `build-short-urls/pd-short-urls.csv`
+
+There are then two options for deployment:
+
+### Deploy from the command line
+
+Run:
 
 ```
 cd build-short-urls
-python build-redirects.py
+AWS_ACCESS_KEY_ID=<your_key> AWS_SECRET_ACCESS_KEY=<your_secret> python build_redirects.py
 ```
 
-It assumes you are running python3 and have the dependencies listed
-in the requirements.txt file.
+This assumes you are:
+
+* running python3
+* have the dependencies listed in the requirements.txt file
+
+### Use github actions
+
+The preferred way to do deployments is using github actions. For that to work your
+repository will need secrets set up for AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+
+With that done, pushing the updated CSV to github (or just updating it using github
+on the web) will trigger a deployment.
 
 ## Any questions/suggestions
 
