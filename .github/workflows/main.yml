@@ -12,8 +12,7 @@ jobs:
         python-version: '3.12.x'
 
     - name: Install dependencies
-      run: pip install -r build-short-urls/requirements.txt --upgrade pip
-          pip install pylint
+      run: pip install -r build-short-urls/requirements.txt --upgrade pip && pip install pylint
 
     - name: Lint code
       run: cd build-short-urls && pylint *.py
