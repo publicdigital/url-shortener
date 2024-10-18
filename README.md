@@ -52,6 +52,17 @@ add it to the file `build-short-urls/pd-short-urls.csv`
 
 There are then two options for deployment:
 
+### Use Github actions
+
+If you're editing the main PD version of this then committing your change will trigger
+a deployment.
+
+If using your own clone of this then your repository will need secrets set up for
+AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+
+With that done, pushing the updated CSV to github (or just updating it using github
+on the web) will trigger a deployment.
+
 ### Deploy from the command line
 
 Run:
@@ -65,14 +76,6 @@ This assumes you are:
 
 * running python3
 * have the dependencies listed in the requirements.txt file
-
-### Use github actions
-
-The preferred way to do deployments is using github actions. For that to work your
-repository will need secrets set up for AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
-
-With that done, pushing the updated CSV to github (or just updating it using github
-on the web) will trigger a deployment.
 
 ## Any questions/suggestions
 
